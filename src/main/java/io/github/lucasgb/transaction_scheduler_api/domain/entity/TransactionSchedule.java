@@ -4,6 +4,8 @@ import io.github.lucasgb.transaction_scheduler_api.domain.valueObjects.Money;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "transaction_schedule")
 public class TransactionSchedule {

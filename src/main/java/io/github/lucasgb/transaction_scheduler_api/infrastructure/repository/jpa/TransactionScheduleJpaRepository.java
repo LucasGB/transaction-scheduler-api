@@ -2,6 +2,7 @@ package io.github.lucasgb.transaction_scheduler_api.infrastructure.repository.jp
 
 import io.github.lucasgb.transaction_scheduler_api.domain.entity.TransactionSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface TransactionScheduleJpaRepository extends JpaRepository<TransactionSchedule, Long> {
+public interface TransactionScheduleJpaRepository extends JpaRepository<TransactionSchedule, Long>, JpaSpecificationExecutor<TransactionSchedule> {
 }
