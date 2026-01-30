@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Repository
 public class TransactionScheduleRepositoryImpl implements TransactionScheduleRepository {
@@ -23,6 +24,11 @@ public class TransactionScheduleRepositoryImpl implements TransactionScheduleRep
     @Override
     public TransactionSchedule save(TransactionSchedule transactionSchedule) {
         return transactionScheduleRepository.save(transactionSchedule);
+    }
+
+    @Override
+    public Optional<TransactionSchedule> findById(Long id) {
+        return transactionScheduleRepository.findById(id);
     }
 
     @Override

@@ -2,12 +2,16 @@ package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.
 
 import io.github.lucasgb.transaction_scheduler_api.application.command.AddTransactionScheduleCommand;
 import io.github.lucasgb.transaction_scheduler_api.application.command.FetchTransactionScheduleCommand;
+import io.github.lucasgb.transaction_scheduler_api.application.command.UpdateTransactionScheduleCommand;
 import io.github.lucasgb.transaction_scheduler_api.application.dto.AddTransactionScheduleCommandResult;
 import io.github.lucasgb.transaction_scheduler_api.application.dto.FetchTransactionScheduleCommandResult;
+import io.github.lucasgb.transaction_scheduler_api.application.dto.UpdateTransactionScheduleCommandResult;
 import io.github.lucasgb.transaction_scheduler_api.application.dto.request.AddTransactionScheduleRequest;
 import io.github.lucasgb.transaction_scheduler_api.application.dto.request.FetchTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.application.dto.request.UpdateTransactionScheduleRequest;
 import io.github.lucasgb.transaction_scheduler_api.application.handler.AddTransactionScheduleCommandHandler;
 import io.github.lucasgb.transaction_scheduler_api.application.handler.FetchTransactionScheduleCommandHandler;
+import io.github.lucasgb.transaction_scheduler_api.application.handler.UpdateTransactionScheduleCommandHandler;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +26,12 @@ public class TransactionScheduleController {
 
     private final AddTransactionScheduleCommandHandler addTransactionScheduleCommandHandler;
     private final FetchTransactionScheduleCommandHandler fetchTransactionScheduleQueryHandler;
+    private final UpdateTransactionScheduleCommandHandler updateTransactionScheduleCommandHandler;
 
-    public TransactionScheduleController(AddTransactionScheduleCommandHandler addTransactionScheduleCommandHandler, FetchTransactionScheduleCommandHandler fetchTransactionScheduleQueryHandler) {
+    public TransactionScheduleController(AddTransactionScheduleCommandHandler addTransactionScheduleCommandHandler, FetchTransactionScheduleCommandHandler fetchTransactionScheduleQueryHandler, UpdateTransactionScheduleCommandHandler updateTransactionScheduleCommandHandler) {
         this.addTransactionScheduleCommandHandler = addTransactionScheduleCommandHandler;
         this.fetchTransactionScheduleQueryHandler = fetchTransactionScheduleQueryHandler;
+        this.updateTransactionScheduleCommandHandler = updateTransactionScheduleCommandHandler;
     }
 
     @PostMapping("/create")
@@ -39,6 +45,23 @@ public class TransactionScheduleController {
                             "id", result.transactionSchedule().getId(),
                             "error", result.errorMessage()
                     )
+            );
+        }
+
+        return ResponseEntity.ok(result.transactionSchedule());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTransaction(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateTransactionScheduleRequest request) {
+
+        final UpdateTransactionScheduleCommand command = UpdateTransactionScheduleCommand.fromRequest(id, request);
+        final UpdateTransactionScheduleCommandResult result = updateTransactionScheduleCommandHandler.handle(command);
+
+        if (!result.success()) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("error", result.errorMessage())
             );
         }
 
