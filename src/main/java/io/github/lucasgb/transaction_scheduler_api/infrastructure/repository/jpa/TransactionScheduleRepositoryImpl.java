@@ -39,6 +39,11 @@ public class TransactionScheduleRepositoryImpl implements TransactionScheduleRep
         return transactionScheduleRepository.findAll(spec, PageRequest.of(page, size));
     }
 
+    @Override
+    public void deleteById(Long id) {
+        transactionScheduleRepository.deleteById(id);
+    }
+
     /*
      * Dynamically builds predicates with AND operator. If no predicates are specified, return a predicate that's always true (1=1).
     */

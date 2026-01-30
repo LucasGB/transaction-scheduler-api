@@ -12,5 +12,5 @@ public interface TransactionScheduleRepository {
     Page<TransactionSchedule> findByFilters(String sourceAccount, String targetAccount,
                                             LocalDate scheduleDateFrom, LocalDate scheduleDateTo,
                                             int page, int size);
-
+    void deleteById(Long id);
 }
