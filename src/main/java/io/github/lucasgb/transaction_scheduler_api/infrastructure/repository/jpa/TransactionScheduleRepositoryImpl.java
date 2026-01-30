@@ -7,9 +7,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TransactionScheduleRepositoryImpl implements TransactionScheduleRepository {
 
-    private final TransactionScheduleRepository transactionScheduleRepository;
+    private final TransactionScheduleJpaRepository transactionScheduleRepository;
 
-    public TransactionScheduleRepositoryImpl(TransactionScheduleRepository transactionScheduleRepository) {
+    public TransactionScheduleRepositoryImpl(TransactionScheduleJpaRepository transactionScheduleRepository) {
         this.transactionScheduleRepository = transactionScheduleRepository;
     }
 
