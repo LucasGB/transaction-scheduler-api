@@ -5,6 +5,7 @@ import io.github.lucasgb.transaction_scheduler_api.domain.interfaces.Transaction
 import io.github.lucasgb.transaction_scheduler_api.domain.valueObjects.Money;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class ConfigurableTransactionFeeStrategy implements TransactionFeeStrategy {
 
@@ -23,7 +24,8 @@ public class ConfigurableTransactionFeeStrategy implements TransactionFeeStrateg
     public Money calculate(Money money) {
         BigDecimal total = money.getAmount()
                 .multiply(rule.getRate())
-                .add(rule.getFixedFee());
+                .add(rule.getFixedFee())
+                .setScale(2, RoundingMode.HALF_UP);
 
         return new Money(total, money.getCurrency());
     }
