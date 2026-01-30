@@ -6,8 +6,6 @@ import java.time.LocalDate;
 public record AddTransactionScheduleRequest (
         BigDecimal transferAmount,
         String currency,
-        BigDecimal feeAmount,
-        BigDecimal totalAmount,
         String sourceAccount,
         String targetAccount,
         LocalDate scheduleDate

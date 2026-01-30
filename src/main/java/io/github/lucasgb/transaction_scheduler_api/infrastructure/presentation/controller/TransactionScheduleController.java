@@ -60,6 +60,12 @@ public class TransactionScheduleController {
             @Valid @RequestBody UpdateTransactionScheduleRequest request) {
 
         final UpdateTransactionScheduleCommand command = UpdateTransactionScheduleCommand.fromRequest(id, request);
+
+        if (command.newTransferAmount() == null && command.scheduleDate() == null) {
+            return ResponseEntity.badRequest()
+                    .body("At least one of 'newTransferAmount' or 'scheduleDate' must be provided.");
+        }
+
         final UpdateTransactionScheduleCommandResult result = updateTransactionScheduleCommandHandler.handle(command);
 
         if (!result.success()) {

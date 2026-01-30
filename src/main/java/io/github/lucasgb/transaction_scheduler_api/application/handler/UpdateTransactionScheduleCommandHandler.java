@@ -3,15 +3,22 @@ package io.github.lucasgb.transaction_scheduler_api.application.handler;
 import io.github.lucasgb.transaction_scheduler_api.application.command.UpdateTransactionScheduleCommand;
 import io.github.lucasgb.transaction_scheduler_api.application.dto.UpdateTransactionScheduleCommandResult;
 import io.github.lucasgb.transaction_scheduler_api.application.service.TransactionFeeStrategyFactory;
+import io.github.lucasgb.transaction_scheduler_api.domain.entity.TransactionSchedule;
 import io.github.lucasgb.transaction_scheduler_api.domain.interfaces.TransactionFeeStrategy;
 import io.github.lucasgb.transaction_scheduler_api.domain.interfaces.TransactionScheduleRepository;
 import io.github.lucasgb.transaction_scheduler_api.domain.service.TransactionFeeCalculationService;
 import io.github.lucasgb.transaction_scheduler_api.domain.valueObjects.Money;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
 
 @Service
 public class UpdateTransactionScheduleCommandHandler {
@@ -31,34 +38,37 @@ public class UpdateTransactionScheduleCommandHandler {
 
     @Transactional
     public UpdateTransactionScheduleCommandResult handle(UpdateTransactionScheduleCommand command) {
+        if (command == null || !command.hasUpdates())
+            return new UpdateTransactionScheduleCommandResult(false, null,
+                    "At least one of 'newTransferAmount' or 'scheduleDate' must be provided.");
+
+        if (command.scheduleDate() != null && command.scheduleDate().isBefore(LocalDate.now()))
+            return new UpdateTransactionScheduleCommandResult(false, null,
+                    "Cannot schedule data to the past.");
+
         try {
-            var transaction = transactionScheduleRepository.findById(command.id())
+            final TransactionSchedule transaction = transactionScheduleRepository.findById(command.id())
                     .orElseThrow(() -> new IllegalArgumentException("Transaction not found"));
 
-            if (command.scheduleDate() != null && !command.scheduleDate().equals(transaction.getScheduleDate())) {
-                transaction.setScheduleDate(command.scheduleDate());
+            final BigDecimal transferAmount = Objects.requireNonNullElse(command.newTransferAmount(), transaction.getTotalAmount().getAmount());
+            final List<TransactionFeeStrategy> strategies = transactionFeeStrategyFactory.createStrategies();
 
-                final List<TransactionFeeStrategy> strategies = transactionFeeStrategyFactory.createStrategies();
-                final Money calculatedFee = transactionFeeCalculationService.calculate(
-                        transaction.getTotalAmount(),
-                        command.scheduleDate(),
-                        strategies
-                );
+            final Money calculatedFee = transactionFeeCalculationService.calculate(
+                    new Money(transferAmount, transaction.getNetAmount().getCurrency()),
+                    command.scheduleDate(),
+                    strategies
+            );
 
-                final Money transferAmount = new Money(
-                        transaction.getTotalAmount().getAmount().subtract(calculatedFee.getAmount()),
-                        transaction.getTotalAmount().getCurrency()
-                );
-
-                transaction.setMoney(transferAmount);
-                transaction.setFee(calculatedFee);
-                transaction.setUpdatedAt(LocalDateTime.now());
-            }
-
+            transaction.reschedule(transferAmount, command.scheduleDate(), calculatedFee);
             transactionScheduleRepository.save(transaction);
             return new UpdateTransactionScheduleCommandResult(true, transaction, null);
-        } catch (Exception ex) {
-            return new UpdateTransactionScheduleCommandResult(false, null, ex.getMessage());
+        } catch (EntityNotFoundException enfe) {
+            return new UpdateTransactionScheduleCommandResult(false, null, enfe.getMessage());
+        } catch (IllegalArgumentException iae) {
+            return new UpdateTransactionScheduleCommandResult(false, null, iae.getMessage());
+        } catch (Exception e) {
+            // log?
+            return new UpdateTransactionScheduleCommandResult(false, null, "Internal server error");
         }
     }
 }

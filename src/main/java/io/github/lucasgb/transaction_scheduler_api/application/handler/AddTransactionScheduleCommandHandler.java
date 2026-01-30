@@ -32,17 +32,21 @@ public class AddTransactionScheduleCommandHandler {
             var strategies = transactionFeeStrategyFactory.createStrategies();
 
             final Money calculatedFee = transactionFeeCalculationService.calculate(
-                    command.money(),
+                    command.transferAmount(),
                     command.scheduleDate(),
                     strategies
             );
 
-            final Money transferAmount = new Money(command.money().getAmount().subtract(calculatedFee.getAmount()), command.money().getCurrency());
+            final Money transferAmount = new Money(
+                    command.transferAmount().getAmount()
+                            .subtract(calculatedFee.getAmount()),
+                    command.transferAmount().getCurrency()
+            );
 
             final TransactionSchedule transactionSchedule = TransactionSchedule.builder()
-                    .money(transferAmount)
-                    .fee(calculatedFee)
-                    .totalAmount(command.money())
+                    .netAmount(transferAmount)
+                    .feeAmount(calculatedFee)
+                    .totalAmount(command.transferAmount())
                     .sourceAccount(command.sourceAccount())
                     .targetAccount(command.targetAccount())
                     .scheduleDate(command.scheduleDate())

@@ -7,9 +7,7 @@ import io.github.lucasgb.transaction_scheduler_api.domain.valueObjects.Money;
 import java.time.LocalDate;
 
 public record AddTransactionScheduleCommand(
-        Money money,
-        Money fee,
-        Money totalAmount,
+        Money transferAmount,
         String sourceAccount,
         String targetAccount,
         LocalDate scheduleDate
@@ -19,10 +17,6 @@ public record AddTransactionScheduleCommand(
     ) {
         return new AddTransactionScheduleCommand(
                 new Money(request.transferAmount(),
-                        CurrencyEnum.valueOf(request.currency())),
-                new Money(request.feeAmount(),
-                        CurrencyEnum.valueOf(request.currency())),
-                new Money(request.totalAmount(),
                         CurrencyEnum.valueOf(request.currency())),
                 request.sourceAccount(),
                 request.targetAccount(),

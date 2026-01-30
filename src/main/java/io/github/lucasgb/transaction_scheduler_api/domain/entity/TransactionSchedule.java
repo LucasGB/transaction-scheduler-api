@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,16 +26,16 @@ public class TransactionSchedule {
     private Long id;
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "transfer_amount")),
-            @AttributeOverride(name = "currency", column = @Column(name = "transfer_currency"))
+            @AttributeOverride(name = "amount", column = @Column(name = "net_amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "net_currency"))
     })
-    private Money money;
+    private Money netAmount;
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "amount", column = @Column(name = "fee_amount")),
             @AttributeOverride(name = "currency", column = @Column(name = "fee_currency"))
     })
-    private Money fee;
+    private Money feeAmount;
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "amount", column = @Column(name = "total_amount")),
@@ -46,4 +47,22 @@ public class TransactionSchedule {
     private LocalDate scheduleDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void reschedule(BigDecimal newAmount, LocalDate newDate, Money calculatedFee) {
+        if (newDate != null)
+            this.scheduleDate = newDate;
+
+        if (newAmount != null)
+            this.totalAmount = new Money(newAmount, this.totalAmount.getCurrency());
+
+        if (calculatedFee != null) {
+            this.feeAmount = calculatedFee;
+            this.netAmount = new Money(
+                    this.totalAmount.getAmount().subtract(calculatedFee.getAmount()),
+                    this.totalAmount.getCurrency()
+            );
+        }
+
+        this.updatedAt = LocalDateTime.now();
+    }
 }
