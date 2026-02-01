@@ -1,4 +1,4 @@
-package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.response;
+package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.response;
 
 import io.github.lucasgb.transaction_scheduler_api.domain.entity.TransactionSchedule;
 import io.swagger.v3.oas.annotations.media.Schema;

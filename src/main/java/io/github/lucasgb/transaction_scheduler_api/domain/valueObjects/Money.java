@@ -30,10 +30,6 @@ public class Money {
         this.amount = amount.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public boolean isPositive() {
-        return amount.compareTo(BigDecimal.ZERO) > 0;
-    }
-
     public BigDecimal getAmount() { return amount; }
     public CurrencyEnum getCurrency() { return currency; }
 

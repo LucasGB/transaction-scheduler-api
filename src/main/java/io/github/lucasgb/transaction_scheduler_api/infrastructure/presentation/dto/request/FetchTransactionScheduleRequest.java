@@ -1,4 +1,4 @@
-package io.github.lucasgb.transaction_scheduler_api.application.dto.request;
+package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
@@ -52,7 +52,7 @@ public record FetchTransactionScheduleRequest(
         @Schema(
                 description = "Page size",
                 example = "20",
-                defaultValue = "20",
+                defaultValue = "1",
                 minimum = "1",
                 maximum = "100"
         )

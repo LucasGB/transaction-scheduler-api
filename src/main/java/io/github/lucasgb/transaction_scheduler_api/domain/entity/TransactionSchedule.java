@@ -1,5 +1,6 @@
 package io.github.lucasgb.transaction_scheduler_api.domain.entity;
 
+import io.github.lucasgb.transaction_scheduler_api.domain.exceptions.SameAccountTransferException;
 import io.github.lucasgb.transaction_scheduler_api.domain.valueObjects.Money;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -16,7 +17,6 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "transaction_schedule")
 public class TransactionSchedule {
@@ -47,6 +47,22 @@ public class TransactionSchedule {
     private LocalDate scheduleDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public TransactionSchedule(Long id, Money netAmount, Money feeAmount, Money totalAmount, String sourceAccount, String targetAccount, LocalDate scheduleDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        if (sourceAccount.equals(targetAccount)) {
+            throw new SameAccountTransferException();
+        }
+
+        this.id = id;
+        this.netAmount = netAmount;
+        this.feeAmount = feeAmount;
+        this.totalAmount = totalAmount;
+        this.sourceAccount = sourceAccount;
+        this.targetAccount = targetAccount;
+        this.scheduleDate = scheduleDate;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public void reschedule(BigDecimal newAmount, LocalDate newDate, Money calculatedFee) {
         if (newDate != null)

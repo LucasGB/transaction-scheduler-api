@@ -2,22 +2,22 @@ package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.
 
 import io.github.lucasgb.transaction_scheduler_api.application.command.AddTransactionScheduleCommand;
 import io.github.lucasgb.transaction_scheduler_api.application.command.DeleteTransactionScheduleCommand;
-import io.github.lucasgb.transaction_scheduler_api.application.command.FetchTransactionScheduleCommand;
+import io.github.lucasgb.transaction_scheduler_api.application.command.FetchTransactionScheduleQuery;
 import io.github.lucasgb.transaction_scheduler_api.application.command.UpdateTransactionScheduleCommand;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.AddTransactionScheduleCommandResult;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.FetchTransactionScheduleCommandResult;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.UpdateTransactionScheduleCommandResult;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.request.AddTransactionScheduleRequest;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.request.FetchTransactionScheduleRequest;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.request.UpdateTransactionScheduleRequest;
-import io.github.lucasgb.transaction_scheduler_api.application.handler.AddTransactionScheduleCommandHandler;
-import io.github.lucasgb.transaction_scheduler_api.application.handler.DeleteTransactionScheduleCommandHandler;
-import io.github.lucasgb.transaction_scheduler_api.application.handler.FetchTransactionScheduleCommandHandler;
-import io.github.lucasgb.transaction_scheduler_api.application.handler.UpdateTransactionScheduleCommandHandler;
-import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.response.ApiError;
-import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.response.AddTransactionScheduleResponse;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.response.FetchTransactionScheduleQueryResponse;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request.AddTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request.FetchTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request.UpdateTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.application.service.handler.AddTransactionScheduleCommandHandler;
+import io.github.lucasgb.transaction_scheduler_api.application.service.handler.DeleteTransactionScheduleCommandHandler;
+import io.github.lucasgb.transaction_scheduler_api.application.service.handler.FetchTransactionScheduleCommandHandler;
+import io.github.lucasgb.transaction_scheduler_api.application.service.handler.UpdateTransactionScheduleCommandHandler;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.response.ApiError;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.response.AddTransactionScheduleResponse;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.response.UpdateTransactionScheduleResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 @Tag(name = "Transaction Schedule", description = "Manage scheduled financial transactions")
 @RestController
@@ -54,33 +53,83 @@ public class TransactionScheduleController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Transaction created successfully", content = @Content(schema = @Schema(implementation = AddTransactionScheduleResponse.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "Validation or business rule error", content = @Content(schema = @Schema(implementation = ApiError.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ApiError.class), mediaType = "application/json"))
+            @ApiResponse(responseCode = "400", description = "Validation or business rule error", content = @Content(
+                    schema = @Schema(implementation = ApiError.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "Invalid Currency",
+                                    value = "{\"code\": \"INVALID_ARGUMENT\", \"message\": \"[currency]: Currency must be EUR, USD, or BRL\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "Same account transfer",
+                                    value = "{\"code\": \"SAME_ACCOUNT_TRANSFER_EXCEPTION\", \"message\": \"Source and target accounts must be different\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "No matching fee calculation rule",
+                                    value = "{\"code\": \"NO_MATCHING_FEE_CALCULATION_RULE\", \"message\": \"No matching fee calculation rule.\"}"
+                            ),
+
+                    },
+                    mediaType = "application/json")
+            ),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                    schema = @Schema(implementation = ApiError.class), mediaType = "application/json",
+                    examples = {
+                            @ExampleObject(
+                                    name = "Unexpected Error",
+                                    value = "{\"code\": \"INTERNAL_ERROR\", \"message\": \"An unexpected error occurred.\"}"
+                            )
+                    })
+            )
     })
     @PostMapping("/create")
     public ResponseEntity<?> addTransaction(@Valid @RequestBody AddTransactionScheduleRequest request) {
         final AddTransactionScheduleCommand command = AddTransactionScheduleCommand.fromRequest(request);
-        final AddTransactionScheduleCommandResult result = addTransactionScheduleCommandHandler.handle(command);
-
-        if (!result.success()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "error", result.errorMessage()
-                    )
-            );
-        }
+        final AddTransactionScheduleResponse response = addTransactionScheduleCommandHandler.handle(command);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(AddTransactionScheduleResponse.from(
-                        result.transactionSchedule()
-                ));
+                .body(response);
     }
 
     @Operation(summary = "Update a scheduled transaction")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Transaction updated"),
-            @ApiResponse(responseCode = "404", description = "Transaction not found")
+            @ApiResponse(responseCode = "200", description = "Transaction updated", content = @Content(schema = @Schema(implementation = UpdateTransactionScheduleResponse.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Validation or business rule error", content = @Content(
+                    schema = @Schema(implementation = ApiError.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "Invalid Input",
+                                    value = "{\"code\": \"INVALID_INPUT\", \"message\": \"At least one of 'newTransferAmount' or 'scheduleDate' must be provided.\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "Invalid Transfer Amount",
+                                    value = "{\"code\": \"INVALID_ARGUMENT\", \"message\": \"[newTransferAmount]: Transfer amount must be greater than 0\"}"
+                            )
+                    },
+                    mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404", description = "Transaction not found", content = @Content(
+                            schema = @Schema(implementation = ApiError.class),
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Transaction not found",
+                                            value = "{\"code\": \"TRANSACTION_NOT_FOUND\", \"message\": \"Transaction not found\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                    schema = @Schema(implementation = ApiError.class), mediaType = "application/json",
+                    examples = {
+                            @ExampleObject(
+                                    name = "Unexpected Error",
+                                    value = "{\"code\": \"INTERNAL_ERROR\", \"message\": \"An unexpected error occurred.\"}"
+                            )
+                    })
+            )
     })
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTransaction(
@@ -89,23 +138,102 @@ public class TransactionScheduleController {
 
         final UpdateTransactionScheduleCommand command = UpdateTransactionScheduleCommand.fromRequest(id, request);
 
-        if (command.newTransferAmount() == null && command.scheduleDate() == null) {
-            return ResponseEntity.badRequest()
-                    .body("At least one of 'newTransferAmount' or 'scheduleDate' must be provided.");
-        }
+        if (!command.hasUpdates())
+            throw new IllegalArgumentException("At least one of 'newTransferAmount' or 'scheduleDate' must be provided.");
 
-        final UpdateTransactionScheduleCommandResult result = updateTransactionScheduleCommandHandler.handle(command);
+        final UpdateTransactionScheduleResponse result = updateTransactionScheduleCommandHandler.handle(command);
 
-        if (!result.success()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("error", result.errorMessage())
-            );
-        }
-
-        return ResponseEntity.ok(result.transactionSchedule());
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Fetch scheduled transactions with optional filters")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of scheduled transactions matching the filters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = FetchTransactionScheduleQueryResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Example response",
+                                            value = """
+                                                {
+                                                  "page": 0,
+                                                  "size": 20,
+                                                  "totalItems": 2,
+                                                  "totalPages": 1,
+                                                  "items": [
+                                                    {
+                                                      "id": 1,
+                                                      "netAmount": {
+                                                        "amount": 1820.00,
+                                                        "currency": "USD"
+                                                      },
+                                                      "feeAmount": {
+                                                        "amount": 180.00,
+                                                        "currency": "USD"
+                                                      },
+                                                      "totalAmount": {
+                                                        "amount": 2000.00,
+                                                        "currency": "USD"
+                                                      },
+                                                      "sourceAccount": "PT50000001",
+                                                      "targetAccount": "PT50000002",
+                                                      "scheduleDate": "2026-02-03",
+                                                      "createdAt": "2026-02-02T02:47:01.12042",
+                                                      "updatedAt": "2026-02-02T02:47:01.12044"
+                                                    },
+                                                    {
+                                                      "id": 2,
+                                                      "netAmount": {
+                                                        "amount": 3680.00,
+                                                        "currency": "USD"
+                                                      },
+                                                      "feeAmount": {
+                                                        "amount": 320.00,
+                                                        "currency": "USD"
+                                                      },
+                                                      "totalAmount": {
+                                                        "amount": 4000.00,
+                                                        "currency": "USD"
+                                                      },
+                                                      "sourceAccount": "PT50000001",
+                                                      "targetAccount": "DE490000001",
+                                                      "scheduleDate": "2026-02-15",
+                                                      "createdAt": "2026-02-02T02:47:21.801804",
+                                                      "updatedAt": "2026-02-02T02:47:21.801823"
+                                                    }
+                                                  ]
+                                                }
+                                            """
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid query parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiError.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"INVALID_DATE_RANGE\", \"message\": \"scheduleDateFrom cannot be after scheduleDateTo\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Unexpected server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiError.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"INTERNAL_ERROR\", \"message\": \"Something went wrong on the server\"}"
+                            )
+                    )
+            )
+    })
     @GetMapping
     public ResponseEntity<?> fetchTransactions(
             @RequestParam(required = false) String sourceAccount,
@@ -118,24 +246,31 @@ public class TransactionScheduleController {
         final FetchTransactionScheduleRequest request = new FetchTransactionScheduleRequest(
                 sourceAccount, targetAccount, scheduleDateFrom, scheduleDateTo, page, size
         );
-        final FetchTransactionScheduleCommand query = FetchTransactionScheduleCommand.fromRequest(request);
-        final FetchTransactionScheduleCommandResult result = fetchTransactionScheduleQueryHandler.handle(query);
+        final FetchTransactionScheduleQuery query = FetchTransactionScheduleQuery.fromRequest(request);
+        final FetchTransactionScheduleQueryResponse result = fetchTransactionScheduleQueryHandler.handle(query);
 
         return ResponseEntity.ok(result.transactions());
     }
 
     @Operation(summary = "Delete a scheduled transaction")
-    @ApiResponse(responseCode = "204", description = "Transaction deleted")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Transaction deleted"),
+            @ApiResponse(
+                    responseCode = "404", description = "Transaction not found", content = @Content(
+                    schema = @Schema(implementation = ApiError.class),
+                    mediaType = "application/json",
+                    examples = {
+                            @ExampleObject(
+                                    name = "Transaction not found",
+                                    value = "{\"code\": \"TRANSACTION_NOT_FOUND\", \"message\": \"Transaction not found\"}"
+                            )
+                    })
+            ),
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
         final DeleteTransactionScheduleCommand command = new DeleteTransactionScheduleCommand(id);
-        final var result = deleteTransactionScheduleCommandHandler.handle(command);
-
-        if (!result.success()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("error", result.errorMessage())
-            );
-        }
+        deleteTransactionScheduleCommandHandler.handle(command);
 
         return ResponseEntity.noContent().build();
     }

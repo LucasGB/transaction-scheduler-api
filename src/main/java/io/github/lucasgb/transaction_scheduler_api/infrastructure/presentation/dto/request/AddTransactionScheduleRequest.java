@@ -1,4 +1,4 @@
-package io.github.lucasgb.transaction_scheduler_api.application.dto.request;
+package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -63,10 +63,4 @@ public record AddTransactionScheduleRequest (
         @NotNull(message = "Schedule date is required")
         @FutureOrPresent(message = "Schedule date cannot be in the past")
         LocalDate scheduleDate
-){
-    public AddTransactionScheduleRequest {
-        if (sourceAccount != null && sourceAccount.equals(targetAccount)) {
-            throw new IllegalArgumentException("Source and target accounts must be different");
-        }
-    }
-}
+) {}

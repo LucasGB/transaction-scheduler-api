@@ -1,6 +1,6 @@
 package io.github.lucasgb.transaction_scheduler_api.application.command;
 
-import io.github.lucasgb.transaction_scheduler_api.application.dto.request.AddTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request.AddTransactionScheduleRequest;
 import io.github.lucasgb.transaction_scheduler_api.domain.enums.CurrencyEnum;
 import io.github.lucasgb.transaction_scheduler_api.domain.valueObjects.Money;
 

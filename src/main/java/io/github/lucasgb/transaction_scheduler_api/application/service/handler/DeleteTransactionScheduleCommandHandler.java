@@ -1,7 +1,6 @@
-package io.github.lucasgb.transaction_scheduler_api.application.handler;
+package io.github.lucasgb.transaction_scheduler_api.application.service.handler;
 
 import io.github.lucasgb.transaction_scheduler_api.application.command.DeleteTransactionScheduleCommand;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.DeleteTransactionScheduleCommandResult;
 import io.github.lucasgb.transaction_scheduler_api.domain.interfaces.TransactionScheduleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -17,15 +16,10 @@ public class DeleteTransactionScheduleCommandHandler {
     }
 
     @Transactional
-    public DeleteTransactionScheduleCommandResult handle(DeleteTransactionScheduleCommand command) {
-        try {
-            transactionScheduleRepository.findById(command.id())
-                    .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+    public void handle(DeleteTransactionScheduleCommand command) {
+        transactionScheduleRepository.findById(command.id())
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
 
-            transactionScheduleRepository.deleteById(command.id());
-            return new DeleteTransactionScheduleCommandResult(true, null);
-        } catch (Exception ex) {
-            return new DeleteTransactionScheduleCommandResult(false, ex.getMessage());
-        }
+        transactionScheduleRepository.deleteById(command.id());
     }
 }

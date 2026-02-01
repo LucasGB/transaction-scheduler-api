@@ -1,6 +1,6 @@
 package io.github.lucasgb.transaction_scheduler_api.application.command;
 
-import io.github.lucasgb.transaction_scheduler_api.application.dto.request.UpdateTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request.UpdateTransactionScheduleRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

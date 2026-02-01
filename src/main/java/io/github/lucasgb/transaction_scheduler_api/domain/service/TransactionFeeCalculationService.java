@@ -17,7 +17,7 @@ public class TransactionFeeCalculationService {
         return strategies.stream()
                 .filter(s -> s.appliesTo(amount.getAmount(), days))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No matching fee rule"))
+                .orElseThrow(() -> new IllegalStateException("No matching fee calculation rule."))
                 .calculate(amount);
     }
 }

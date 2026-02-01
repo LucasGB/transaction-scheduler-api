@@ -1,10 +1,10 @@
 package io.github.lucasgb.transaction_scheduler_api.application.command;
 
-import io.github.lucasgb.transaction_scheduler_api.application.dto.request.FetchTransactionScheduleRequest;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request.FetchTransactionScheduleRequest;
 
 import java.time.LocalDate;
 
-public record FetchTransactionScheduleCommand(
+public record FetchTransactionScheduleQuery(
         String sourceAccount,
         String targetAccount,
         LocalDate scheduleDateFrom,
@@ -12,8 +12,8 @@ public record FetchTransactionScheduleCommand(
         int page,
         int size
 ) {
-    public static FetchTransactionScheduleCommand fromRequest(FetchTransactionScheduleRequest request) {
-        return new FetchTransactionScheduleCommand(
+    public static FetchTransactionScheduleQuery fromRequest(FetchTransactionScheduleRequest request) {
+        return new FetchTransactionScheduleQuery(
                 request.sourceAccount(),
                 request.targetAccount(),
                 request.scheduleDateFrom(),

@@ -1,7 +1,7 @@
-package io.github.lucasgb.transaction_scheduler_api.application.handler;
+package io.github.lucasgb.transaction_scheduler_api.application.service.handler;
 
-import io.github.lucasgb.transaction_scheduler_api.application.command.FetchTransactionScheduleCommand;
-import io.github.lucasgb.transaction_scheduler_api.application.dto.FetchTransactionScheduleCommandResult;
+import io.github.lucasgb.transaction_scheduler_api.application.command.FetchTransactionScheduleQuery;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.response.FetchTransactionScheduleQueryResponse;
 import io.github.lucasgb.transaction_scheduler_api.domain.interfaces.TransactionScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ public class FetchTransactionScheduleCommandHandler {
     }
 
     @Transactional(readOnly = true)
-    public FetchTransactionScheduleCommandResult handle(FetchTransactionScheduleCommand query) {
+    public FetchTransactionScheduleQueryResponse handle(FetchTransactionScheduleQuery query) {
         var transactions = transactionScheduleRepository.findByFilters(
                 query.sourceAccount(),
                 query.targetAccount(),
@@ -26,6 +26,6 @@ public class FetchTransactionScheduleCommandHandler {
                 query.size()
         );
 
-        return new FetchTransactionScheduleCommandResult(transactions);
+        return FetchTransactionScheduleQueryResponse.from(transactions);
     }
 }

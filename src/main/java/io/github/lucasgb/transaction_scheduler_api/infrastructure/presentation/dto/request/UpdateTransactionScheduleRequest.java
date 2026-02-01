@@ -1,4 +1,4 @@
-package io.github.lucasgb.transaction_scheduler_api.application.dto.request;
+package io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
