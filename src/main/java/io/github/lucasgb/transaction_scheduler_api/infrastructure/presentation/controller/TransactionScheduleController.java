@@ -14,14 +14,24 @@ import io.github.lucasgb.transaction_scheduler_api.application.handler.AddTransa
 import io.github.lucasgb.transaction_scheduler_api.application.handler.DeleteTransactionScheduleCommandHandler;
 import io.github.lucasgb.transaction_scheduler_api.application.handler.FetchTransactionScheduleCommandHandler;
 import io.github.lucasgb.transaction_scheduler_api.application.handler.UpdateTransactionScheduleCommandHandler;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.response.ApiError;
+import io.github.lucasgb.transaction_scheduler_api.infrastructure.presentation.response.AddTransactionScheduleResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Map;
 
+@Tag(name = "Transaction Schedule", description = "Manage scheduled financial transactions")
 @RestController
 @RequestMapping("/api/v1/transaction-schedule")
 public class TransactionScheduleController {
@@ -38,12 +48,21 @@ public class TransactionScheduleController {
         this.deleteTransactionScheduleCommandHandler = deleteTransactionScheduleCommandHandler;
     }
 
+    @Operation(
+            summary = "Create a transaction schedule",
+            description = "Schedules a financial transaction and calculates applicable fees"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transaction created successfully", content = @Content(schema = @Schema(implementation = AddTransactionScheduleResponse.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Validation or business rule error", content = @Content(schema = @Schema(implementation = ApiError.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ApiError.class), mediaType = "application/json"))
+    })
     @PostMapping("/create")
     public ResponseEntity<?> addTransaction(@Valid @RequestBody AddTransactionScheduleRequest request) {
         final AddTransactionScheduleCommand command = AddTransactionScheduleCommand.fromRequest(request);
         final AddTransactionScheduleCommandResult result = addTransactionScheduleCommandHandler.handle(command);
 
-        if (!result.sucess()) {
+        if (!result.success()) {
             return ResponseEntity.badRequest().body(
                     Map.of(
                             "error", result.errorMessage()
@@ -51,9 +70,18 @@ public class TransactionScheduleController {
             );
         }
 
-        return ResponseEntity.ok(result.transactionSchedule());
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(AddTransactionScheduleResponse.from(
+                        result.transactionSchedule()
+                ));
     }
 
+    @Operation(summary = "Update a scheduled transaction")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transaction updated"),
+            @ApiResponse(responseCode = "404", description = "Transaction not found")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTransaction(
             @PathVariable Long id,
@@ -77,6 +105,7 @@ public class TransactionScheduleController {
         return ResponseEntity.ok(result.transactionSchedule());
     }
 
+    @Operation(summary = "Fetch scheduled transactions with optional filters")
     @GetMapping
     public ResponseEntity<?> fetchTransactions(
             @RequestParam(required = false) String sourceAccount,
@@ -95,6 +124,8 @@ public class TransactionScheduleController {
         return ResponseEntity.ok(result.transactions());
     }
 
+    @Operation(summary = "Delete a scheduled transaction")
+    @ApiResponse(responseCode = "204", description = "Transaction deleted")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
         final DeleteTransactionScheduleCommand command = new DeleteTransactionScheduleCommand(id);
