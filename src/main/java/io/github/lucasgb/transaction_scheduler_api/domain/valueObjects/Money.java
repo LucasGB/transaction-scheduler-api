@@ -4,6 +4,7 @@ import io.github.lucasgb.transaction_scheduler_api.domain.enums.CurrencyEnum;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -23,11 +24,10 @@ public class Money {
     protected Money() {}
 
     public Money(BigDecimal amount, CurrencyEnum currency) {
-        if (amount.scale() > 2) {
-            throw new IllegalArgumentException("Money amount cannot have more than 2 decimal places.");
-        }
         this.amount = Objects.requireNonNull(amount);
         this.currency = Objects.requireNonNull(currency);
+
+        this.amount = amount.setScale(2, RoundingMode.HALF_UP);
     }
 
     public boolean isPositive() {

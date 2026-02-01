@@ -37,14 +37,14 @@ public class AddTransactionScheduleCommandHandler {
                     strategies
             );
 
-            final Money transferAmount = new Money(
+            final Money netAmount = new Money(
                     command.transferAmount().getAmount()
                             .subtract(calculatedFee.getAmount()),
                     command.transferAmount().getCurrency()
             );
 
             final TransactionSchedule transactionSchedule = TransactionSchedule.builder()
-                    .netAmount(transferAmount)
+                    .netAmount(netAmount)
                     .feeAmount(calculatedFee)
                     .totalAmount(command.transferAmount())
                     .sourceAccount(command.sourceAccount())
