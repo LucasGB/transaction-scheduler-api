@@ -9,14 +9,11 @@ A Spring Boot application for scheduling financial transactions between accounts
 ## Table of Contents
 
 - [Overview](#overview)
-- [Business Rules](#business-rules)
+- [Key Features](#key-features)
 - [Prerequisites](#prerequisites)
 - [Installation & Setup](#installation--setup)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Database Schema](#database-schema)
-- [Testing](#testing)
-- [Configuration](#configuration)
+- [Build the Project](#build-the-project)
+- [Test Collections](#test-collections)
 
 ## Overview
 
@@ -30,68 +27,21 @@ The Transaction Scheduler API is a financial transaction management system that 
 
 ### Key Features
 
-✅ **Automated Fee Calculation** - Fees are calculated based on configurable database rules  
-✅ **Clean Architecture** - Domain-driven design with clear separation of concerns  
-✅ **CQRS Pattern** - Command/Query separation for better maintainability  
-✅ **Strategy Pattern** - Pluggable fee calculation strategies loaded from database  
-✅ **OpenAPI Documentation** - Interactive Swagger UI for API exploration   
-✅ **Pagination Support** - Efficient data retrieval for large datasets
+**Automated Fee Calculation** - Fees are calculated based on configurable database rules  
+**Clean Architecture** - Domain-driven design with clear separation of concerns  
+**CQRS Pattern** - Command/Query separation for better maintainability  
+**Strategy Pattern** - Pluggable fee calculation strategies loaded from database  
+**OpenAPI Documentation** - Interactive Swagger UI for API exploration   
+**Pagination Support** - Efficient data retrieval for large datasets
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before running this application, ensure you have:
 
-- ☕ **Java 21** or higher ([Download OpenJDK](https://adoptium.net/))
-- 📦 **Maven 3.8+** ([Download Maven](https://maven.apache.org/download.cgi))
-- 🔧 **Git** (optional, for cloning)
-- 🖥️ **Your favorite IDE** (IntelliJ IDEA, Eclipse, VS Code)
-
-### Package Structure
-
-```
-io.github.lucasgb.transaction_scheduler_api/
-│
-├── domain/                          # Core business logic
-│   ├── entity/
-│   │   ├── TransactionSchedule      # Main aggregate root
-│   │   └── TransactionFeeRule       # Fee configuration entity
-│   ├── valueObjects/
-│   │   └── Money                    # Financial amount value object
-│   ├── enums/
-│   │   └── CurrencyEnum             # Supported currencies
-│   ├── interfaces/                  # Domain contracts
-│   │   ├── TransactionScheduleRepository
-│   │   ├── TransactionFeeRuleRepository
-│   │   └── TransactionFeeStrategy
-│   └── service/
-│       ├── TransactionFeeCalculationService
-│       └── strategy/
-│           └── ConfigurableTransactionFeeStrategy
-│
-├── application/                     # Use cases orchestration
-│   ├── command/                     # Write operations
-│   ├── query/                       # Read operations (if separated)
-│   ├── dto/
-│   │   ├── request/                 # API request DTOs
-│   │   └── response/                # API response DTOs
-│   ├── handler/                     # Command/Query handlers
-│   └── service/
-│       └── TransactionFeeStrategyFactory
-│
-├── infrastructure/                  # External concerns
-│   ├── repository/
-│   │   └── jpa/                     # JPA implementations
-│   ├── presentation/
-│   │   └── controller/              # REST controllers
-│   └── exception/
-│       └── GlobalExceptionHandler   # Global error handling
-│
-└── config/                          # Spring configuration
-    ├── OpenApiConfig                # Swagger/OpenAPI setup
-    └── CacheConfig                  # Caching configuration
-```
-
-
+- **Java 21** or higher
+- **Maven 3.8+**
+- **Git**
+- **Your favorite IDE** (IntelliJ IDEA, Eclipse, VS Code)
 
 ## Installation & Setup
 
@@ -107,26 +57,28 @@ cd transaction-scheduler-api
 ```bash
 # Clean and build
 mvn clean install
-
-# Skip tests (faster build)
-mvn clean install -DskipTests
-
-## 🧪 Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-mvn test
-
-# Run with coverage report
-mvn clean test jacoco:report
-
-# Run specific test class
-mvn test -Dtest=TransactionScheduleControllerTest
 ```
 
 ### Test Collections
+
+This project is fully documented using OpenAPI (Swagger) annotations, allowing you to explore and test the API interactively without any external tools.
+
+#### SwaggerUI
+After starting the application, navigate to the Swagger UI in your browser:
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+From there, you can:
+
+- Browse all available endpoints (Commands & Queries)
+- Inspect request/response schemas and validation constraints
+- Try out requests directly from the browser
+- View example payloads and error responses
+- Test pagination, filtering, and validation scenarios interactively
+
+This is the primary and recommended way to test the API, as it always reflects the latest contract defined in the code.
+
 
 Pre-configured API test collections are provided in the `/collections` directory:
 
